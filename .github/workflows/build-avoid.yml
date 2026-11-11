@@ -1,8 +1,8 @@
 name: Build Windows and macOS
 
 # Manual trigger: Actions tab -> "Build Windows and macOS" -> Run workflow.
-# Applies avoid-style-ui.patch (repo root) before compiling, then uploads
-# an unsigned Windows .zip and an unsigned macOS .dmg as artifacts.
+# Compiles the restyled app and uploads an unsigned Windows .zip and an
+# unsigned macOS .dmg as artifacts.
 
 on:
   workflow_dispatch:
@@ -14,15 +14,10 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - name: Keep LF line endings so the patch applies
-        run: |
-          git config --global core.autocrlf false
-          git config --system core.longpaths true
+      - name: Enable long paths
+        run: git config --system core.longpaths true
 
       - uses: actions/checkout@v6
-
-      - name: Apply UI patch
-        run: git apply --ignore-whitespace avoid-style-ui.patch
 
       - uses: subosito/flutter-action@v2
         with:
@@ -76,9 +71,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-
-      - name: Apply UI patch
-        run: git apply --ignore-whitespace avoid-style-ui.patch
 
       - uses: subosito/flutter-action@v2
         with:
