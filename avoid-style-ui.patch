@@ -1,0 +1,581 @@
+From ff9388cb48439932be7e0eda5138b036b58f1b5d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 12 Nov 2026 00:17:04 +0100
+Subject: [PATCH] Restyle UI: flat near-black theme with square corners and
+ accent outlines
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01GjGdU9PDbE5PBeVUzcrQFT
+---
+ app/lib/config/avoid_style.dart               | 320 ++++++++++++++++++
+ app/lib/config/theme.dart                     |  55 +--
+ app/lib/pages/apk_picker_page.dart            |   2 +-
+ app/lib/pages/progress_page.dart              |   2 +-
+ app/lib/widget/big_button.dart                |   2 +-
+ app/lib/widget/custom_progress_bar.dart       |   2 +-
+ app/lib/widget/device_bage.dart               |   2 +-
+ .../widget/dialogs/address_input_dialog.dart  |   2 +-
+ .../widget/dialogs/custom_bottom_sheet.dart   |   2 +-
+ .../widget/dialogs/quick_actions_dialog.dart  |   2 +-
+ app/lib/widget/file_thumbnail.dart            |   2 +-
+ .../widget/list_tile/custom_list_tile.dart    |   4 +-
+ 12 files changed, 364 insertions(+), 33 deletions(-)
+ create mode 100644 app/lib/config/avoid_style.dart
+
+diff --git a/app/lib/config/avoid_style.dart b/app/lib/config/avoid_style.dart
+new file mode 100644
+index 0000000..4508f8c
+--- /dev/null
++++ b/app/lib/config/avoid_style.dart
+@@ -0,0 +1,320 @@
++import 'package:flutter/material.dart';
++
++/// Flat, near-black visual style: square corners, 1px borders,
++/// outlined buttons and a single configurable accent color.
++class AvoidPalette {
++  AvoidPalette._();
++
++  static const Color defaultAccent = Color.fromARGB(255, 224, 89, 186);
++  static const Color formBorder = Color.fromARGB(255, 30, 30, 30);
++  static const Color window = Color.fromARGB(255, 10, 10, 10);
++  static const Color header = Color.fromARGB(255, 14, 14, 14);
++  static const Color surface = Color.fromARGB(255, 18, 18, 18);
++  static const Color surfaceHover = Color.fromARGB(255, 24, 24, 24);
++  static const Color surfacePressed = Color.fromARGB(255, 28, 28, 28);
++  static const Color border = Color.fromARGB(255, 45, 45, 45);
++  static const Color divider = Color.fromARGB(255, 32, 32, 32);
++  static const Color textPrimary = Color.fromARGB(255, 220, 220, 220);
++  static const Color textMuted = Color.fromARGB(255, 150, 150, 150);
++  static const Color textDim = Color.fromARGB(255, 108, 108, 108);
++  static const Color error = Color.fromARGB(255, 229, 72, 77);
++}
++
++/// Colors derived from the accent color.
++class AvoidAccent {
++  final Color accent;
++
++  const AvoidAccent(this.accent);
++
++  Color get hover => _blend(accent, Colors.white, 0.20);
++
++  Color get softHover => _blend(accent, Colors.white, 0.10);
++
++  Color get hoverBackdrop => _blend(Colors.black, accent, 0.08);
++
++  Color get pressedBackdrop => _blend(Colors.black, accent, 0.12);
++
++  Color get selectionBackdrop => _blend(Colors.black, accent, 0.16);
++
++  static Color _blend(Color base, Color mix, double amount) {
++    final a = amount.clamp(0.0, 1.0);
++    final b = 1.0 - a;
++    return Color.fromARGB(
++      255,
++      ((base.r * 255) * b + (mix.r * 255) * a).round(),
++      ((base.g * 255) * b + (mix.g * 255) * a).round(),
++      ((base.b * 255) * b + (mix.b * 255) * a).round(),
++    );
++  }
++}
++
++const _square = RoundedRectangleBorder();
++
++ThemeData buildAvoidTheme({
++  required Color accent,
++  String? fontFamily,
++}) {
++  final a = AvoidAccent(accent);
++
++  final colorScheme = ColorScheme.dark(
++    primary: accent,
++    onPrimary: AvoidPalette.window,
++    primaryContainer: a.selectionBackdrop,
++    onPrimaryContainer: a.hover,
++    secondary: accent,
++    onSecondary: AvoidPalette.window,
++    secondaryContainer: AvoidPalette.surface,
++    onSecondaryContainer: AvoidPalette.textPrimary,
++    tertiary: accent,
++    onTertiary: AvoidPalette.window,
++    error: AvoidPalette.error,
++    onError: Colors.white,
++    surface: AvoidPalette.window,
++    onSurface: AvoidPalette.textPrimary,
++    onSurfaceVariant: AvoidPalette.textMuted,
++    surfaceContainerLowest: AvoidPalette.window,
++    surfaceContainerLow: AvoidPalette.header,
++    surfaceContainer: AvoidPalette.surface,
++    surfaceContainerHigh: AvoidPalette.surfaceHover,
++    surfaceContainerHighest: AvoidPalette.surfacePressed,
++    outline: AvoidPalette.border,
++    outlineVariant: AvoidPalette.divider,
++    surfaceTint: Colors.transparent,
++  );
++
++  OutlineInputBorder inputBorder(Color color) => OutlineInputBorder(
++    borderRadius: BorderRadius.zero,
++    borderSide: BorderSide(color: color),
++  );
++
++  bool isDisabled(Set<WidgetState> s) => s.contains(WidgetState.disabled);
++
++  bool isHot(Set<WidgetState> s) => s.contains(WidgetState.hovered) || s.contains(WidgetState.focused);
++
++  // Accent outline on near-black, used for ElevatedButton / FilledButton.
++  final primaryButton = ButtonStyle(
++    elevation: const WidgetStatePropertyAll(0),
++    shadowColor: const WidgetStatePropertyAll(Colors.transparent),
++    surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
++    overlayColor: const WidgetStatePropertyAll(Colors.transparent),
++    shape: const WidgetStatePropertyAll(_square),
++    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
++    textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.4)),
++    foregroundColor: WidgetStateProperty.resolveWith((s) => isDisabled(s) ? AvoidPalette.textDim : accent),
++    backgroundColor: WidgetStateProperty.resolveWith((s) {
++      if (isDisabled(s)) return AvoidPalette.window;
++      if (s.contains(WidgetState.pressed)) return a.pressedBackdrop;
++      if (isHot(s)) return a.hoverBackdrop;
++      return AvoidPalette.window;
++    }),
++    side: WidgetStateProperty.resolveWith(
++      (s) => BorderSide(color: isDisabled(s) ? AvoidPalette.border : accent),
++    ),
++  );
++
++  // Grey outline on dark surface, used for OutlinedButton.
++  final secondaryButton = ButtonStyle(
++    elevation: const WidgetStatePropertyAll(0),
++    shadowColor: const WidgetStatePropertyAll(Colors.transparent),
++    surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
++    overlayColor: const WidgetStatePropertyAll(Colors.transparent),
++    shape: const WidgetStatePropertyAll(_square),
++    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
++    foregroundColor: WidgetStateProperty.resolveWith((s) {
++      if (isDisabled(s)) return AvoidPalette.textDim;
++      return isHot(s) ? AvoidPalette.textPrimary : AvoidPalette.textMuted;
++    }),
++    backgroundColor: WidgetStateProperty.resolveWith((s) {
++      if (isDisabled(s)) return AvoidPalette.surface;
++      if (s.contains(WidgetState.pressed)) return AvoidPalette.surfacePressed;
++      if (isHot(s)) return AvoidPalette.surfaceHover;
++      return AvoidPalette.surface;
++    }),
++    side: const WidgetStatePropertyAll(BorderSide(color: AvoidPalette.border)),
++  );
++
++  final flatButton = ButtonStyle(
++    overlayColor: const WidgetStatePropertyAll(Colors.transparent),
++    shape: const WidgetStatePropertyAll(_square),
++    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
++    foregroundColor: WidgetStateProperty.resolveWith((s) => isDisabled(s) ? AvoidPalette.textDim : accent),
++    backgroundColor: WidgetStateProperty.resolveWith((s) {
++      if (s.contains(WidgetState.pressed)) return a.pressedBackdrop;
++      if (isHot(s)) return a.hoverBackdrop;
++      return Colors.transparent;
++    }),
++  );
++
++  final base = ThemeData(
++    brightness: Brightness.dark,
++    useMaterial3: true,
++    colorScheme: colorScheme,
++    // same density on all platforms so desktop matches mobile (defaults to compact on desktop)
++    visualDensity: VisualDensity.standard,
++    fontFamily: fontFamily,
++    scaffoldBackgroundColor: AvoidPalette.window,
++    canvasColor: AvoidPalette.window,
++    cardColor: AvoidPalette.surface,
++    dividerColor: AvoidPalette.divider,
++    splashFactory: NoSplash.splashFactory,
++    highlightColor: Colors.transparent,
++    hoverColor: a.hoverBackdrop,
++    appBarTheme: const AppBarTheme(
++      backgroundColor: AvoidPalette.header,
++      foregroundColor: AvoidPalette.textPrimary,
++      surfaceTintColor: Colors.transparent,
++      elevation: 0,
++      scrolledUnderElevation: 0,
++    ),
++    cardTheme: const CardThemeData(
++      color: AvoidPalette.surface,
++      elevation: 0,
++      shadowColor: Colors.transparent,
++      surfaceTintColor: Colors.transparent,
++      shape: RoundedRectangleBorder(side: BorderSide(color: AvoidPalette.border)),
++    ),
++    dialogTheme: const DialogThemeData(
++      backgroundColor: AvoidPalette.window,
++      surfaceTintColor: Colors.transparent,
++      elevation: 0,
++      shape: RoundedRectangleBorder(side: BorderSide(color: AvoidPalette.border)),
++    ),
++    bottomSheetTheme: const BottomSheetThemeData(
++      backgroundColor: AvoidPalette.window,
++      modalBackgroundColor: AvoidPalette.window,
++      surfaceTintColor: Colors.transparent,
++      elevation: 0,
++      shape: RoundedRectangleBorder(side: BorderSide(color: AvoidPalette.border)),
++    ),
++    popupMenuTheme: const PopupMenuThemeData(
++      color: AvoidPalette.surface,
++      surfaceTintColor: Colors.transparent,
++      elevation: 0,
++      shape: RoundedRectangleBorder(side: BorderSide(color: AvoidPalette.border)),
++    ),
++    snackBarTheme: SnackBarThemeData(
++      backgroundColor: AvoidPalette.surface,
++      contentTextStyle: const TextStyle(color: AvoidPalette.textPrimary),
++      actionTextColor: accent,
++      shape: const RoundedRectangleBorder(side: BorderSide(color: AvoidPalette.border)),
++    ),
++    tooltipTheme: const TooltipThemeData(
++      decoration: BoxDecoration(
++        color: AvoidPalette.surface,
++        border: Border.fromBorderSide(BorderSide(color: AvoidPalette.border)),
++      ),
++      textStyle: TextStyle(color: AvoidPalette.textPrimary, fontSize: 12),
++    ),
++    dividerTheme: const DividerThemeData(color: AvoidPalette.divider, thickness: 1, space: 1),
++    inputDecorationTheme: InputDecorationTheme(
++      filled: true,
++      fillColor: AvoidPalette.surface,
++      border: inputBorder(AvoidPalette.border),
++      enabledBorder: inputBorder(AvoidPalette.border),
++      focusedBorder: inputBorder(accent),
++      errorBorder: inputBorder(AvoidPalette.error),
++      focusedErrorBorder: inputBorder(AvoidPalette.error),
++      hintStyle: const TextStyle(color: AvoidPalette.textDim),
++      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
++    ),
++    elevatedButtonTheme: ElevatedButtonThemeData(style: primaryButton),
++    filledButtonTheme: FilledButtonThemeData(style: primaryButton),
++    outlinedButtonTheme: OutlinedButtonThemeData(style: secondaryButton),
++    textButtonTheme: TextButtonThemeData(style: flatButton),
++    iconButtonTheme: IconButtonThemeData(
++      style: ButtonStyle(
++        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
++        shape: const WidgetStatePropertyAll(_square),
++        foregroundColor: WidgetStateProperty.resolveWith((s) {
++          if (isDisabled(s)) return AvoidPalette.textDim;
++          return isHot(s) ? accent : AvoidPalette.textMuted;
++        }),
++      ),
++    ),
++    navigationRailTheme: NavigationRailThemeData(
++      backgroundColor: AvoidPalette.header,
++      indicatorColor: a.selectionBackdrop,
++      indicatorShape: _square,
++      selectedIconTheme: IconThemeData(color: accent),
++      unselectedIconTheme: const IconThemeData(color: AvoidPalette.textMuted),
++      selectedLabelTextStyle: TextStyle(color: accent),
++      unselectedLabelTextStyle: const TextStyle(color: AvoidPalette.textMuted),
++    ),
++    navigationBarTheme: NavigationBarThemeData(
++      backgroundColor: AvoidPalette.header,
++      surfaceTintColor: Colors.transparent,
++      indicatorColor: a.selectionBackdrop,
++      indicatorShape: _square,
++      iconTheme: WidgetStateProperty.resolveWith(
++        (s) => IconThemeData(color: s.contains(WidgetState.selected) ? accent : AvoidPalette.textMuted),
++      ),
++      labelTextStyle: WidgetStateProperty.resolveWith(
++        (s) => TextStyle(
++          fontSize: 12,
++          color: s.contains(WidgetState.selected) ? accent : AvoidPalette.textMuted,
++        ),
++      ),
++    ),
++    switchTheme: SwitchThemeData(
++      thumbColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.selected) ? accent : AvoidPalette.textMuted,
++      ),
++      trackColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.selected) ? a.selectionBackdrop : AvoidPalette.surface,
++      ),
++      trackOutlineColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.selected) ? accent : AvoidPalette.border,
++      ),
++    ),
++    checkboxTheme: CheckboxThemeData(
++      shape: _square,
++      checkColor: const WidgetStatePropertyAll(AvoidPalette.window),
++      fillColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.selected) ? accent : Colors.transparent,
++      ),
++      side: const BorderSide(color: AvoidPalette.textDim, width: 1.5),
++    ),
++    radioTheme: RadioThemeData(
++      fillColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.selected) ? accent : AvoidPalette.textDim,
++      ),
++    ),
++    sliderTheme: SliderThemeData(
++      activeTrackColor: accent,
++      inactiveTrackColor: AvoidPalette.border,
++      thumbColor: accent,
++      overlayColor: accent.withValues(alpha: 0.12),
++    ),
++    progressIndicatorTheme: ProgressIndicatorThemeData(color: accent),
++    scrollbarTheme: ScrollbarThemeData(
++      thickness: const WidgetStatePropertyAll(6),
++      radius: const Radius.circular(3),
++      thumbColor: WidgetStateProperty.resolveWith(
++        (s) => s.contains(WidgetState.dragged)
++            ? a.hover
++            : s.contains(WidgetState.hovered)
++            ? a.softHover
++            : accent,
++      ),
++    ),
++    listTileTheme: ListTileThemeData(
++      shape: _square,
++      selectedColor: accent,
++      iconColor: AvoidPalette.textMuted,
++    ),
++    chipTheme: ChipThemeData(
++      shape: _square,
++      backgroundColor: AvoidPalette.surface,
++      selectedColor: a.selectionBackdrop,
++      side: const BorderSide(color: AvoidPalette.border),
++      labelStyle: const TextStyle(color: AvoidPalette.textPrimary),
++    ),
++  );
++
++  return base.copyWith(
++    textTheme: base.textTheme.apply(
++      bodyColor: AvoidPalette.textPrimary,
++      displayColor: AvoidPalette.textPrimary,
++    ),
++  );
++}
+diff --git a/app/lib/config/theme.dart b/app/lib/config/theme.dart
+index 2961aac..e35c734 100644
+--- a/app/lib/config/theme.dart
++++ b/app/lib/config/theme.dart
+@@ -1,5 +1,6 @@
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
++import 'package:localsend_app/config/avoid_style.dart';
+ import 'package:localsend_app/gen/strings.g.dart';
+ import 'package:localsend_app/model/persistence/color_mode.dart';
+ import 'package:localsend_app/provider/device_info_provider.dart';
+@@ -8,13 +9,21 @@ import 'package:localsend_app/util/ui/dynamic_colors.dart';
+ import 'package:refena_flutter/refena_flutter.dart';
+ import 'package:yaru/yaru.dart' as yaru;
+ 
+-final _borderRadius = BorderRadius.circular(5);
++final _borderRadius = BorderRadius.zero;
+ 
+ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness, DynamicColors? dynamicColors) {
+   if (colorMode == ColorMode.yaru) {
+     return _getYaruTheme(brightness);
+   }
+ 
++  // Flat near-black style. The accent is the user's custom color when set, otherwise the default pink.
++  if (colorMode == ColorMode.localsend || colorMode == ColorMode.custom) {
++    return buildAvoidTheme(
++      accent: colorMode == ColorMode.custom ? customColor : AvoidPalette.defaultAccent,
++      fontFamily: _platformFontFamily(),
++    );
++  }
++
+   final colorScheme = _determineColorScheme(colorMode, customColor, brightness, dynamicColors);
+ 
+   final lightInputBorder = OutlineInputBorder(
+@@ -27,27 +36,7 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
+     borderRadius: _borderRadius,
+   );
+ 
+-  // https://github.com/localsend/localsend/issues/52
+-  final String? fontFamily;
+-  if (checkPlatform([TargetPlatform.windows])) {
+-    fontFamily = switch (LocaleSettings.currentLocale) {
+-      AppLocale.ja => 'Yu Gothic UI',
+-      AppLocale.ko => 'Malgun Gothic',
+-      AppLocale.zhCn => 'Microsoft YaHei UI',
+-      AppLocale.zhHk || AppLocale.zhTw => 'Microsoft JhengHei UI',
+-      _ => 'Segoe UI Variable Display',
+-    };
+-  } else if (checkPlatform([TargetPlatform.linux])) {
+-    fontFamily = switch (LocaleSettings.currentLocale) {
+-      AppLocale.ja => 'Noto Sans CJK JP',
+-      AppLocale.ko => 'Noto Sans CJK KR',
+-      AppLocale.zhCn => 'Noto Sans CJK SC',
+-      AppLocale.zhHk || AppLocale.zhTw => 'Noto Sans CJK TC',
+-      _ => 'Noto Sans',
+-    };
+-  } else {
+-    fontFamily = null;
+-  }
++  final fontFamily = _platformFontFamily();
+ 
+   return ThemeData(
+     colorScheme: colorScheme,
+@@ -82,6 +71,28 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
+   );
+ }
+ 
++// https://github.com/localsend/localsend/issues/52
++String? _platformFontFamily() {
++  if (checkPlatform([TargetPlatform.windows])) {
++    return switch (LocaleSettings.currentLocale) {
++      AppLocale.ja => 'Yu Gothic UI',
++      AppLocale.ko => 'Malgun Gothic',
++      AppLocale.zhCn => 'Microsoft YaHei UI',
++      AppLocale.zhHk || AppLocale.zhTw => 'Microsoft JhengHei UI',
++      _ => 'Segoe UI Variable Display',
++    };
++  } else if (checkPlatform([TargetPlatform.linux])) {
++    return switch (LocaleSettings.currentLocale) {
++      AppLocale.ja => 'Noto Sans CJK JP',
++      AppLocale.ko => 'Noto Sans CJK KR',
++      AppLocale.zhCn => 'Noto Sans CJK SC',
++      AppLocale.zhHk || AppLocale.zhTw => 'Noto Sans CJK TC',
++      _ => 'Noto Sans',
++    };
++  }
++  return null;
++}
++
+ Future<void> updateSystemOverlayStyle(BuildContext context) async {
+   final brightness = Theme.of(context).brightness;
+   await updateSystemOverlayStyleWithBrightness(brightness);
+diff --git a/app/lib/pages/apk_picker_page.dart b/app/lib/pages/apk_picker_page.dart
+index 6445298..aa93b40 100644
+--- a/app/lib/pages/apk_picker_page.dart
++++ b/app/lib/pages/apk_picker_page.dart
+@@ -206,7 +206,7 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
+                         child: InkWell(
+                           onTap: () async => (apkParams.selectMultipleApps) ? _appSelection(app) : _pickApp(app),
+                           customBorder: RoundedRectangleBorder(
+-                            borderRadius: BorderRadius.circular(10),
++                            borderRadius: BorderRadius.zero,
+                           ),
+                           child: Row(
+                             children: [
+diff --git a/app/lib/pages/progress_page.dart b/app/lib/pages/progress_page.dart
+index 204de92..1bddfaf 100644
+--- a/app/lib/pages/progress_page.dart
++++ b/app/lib/pages/progress_page.dart
+@@ -485,7 +485,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
+                             builder: (context, value, child) {
+                               return CustomProgressBar(
+                                 progress: value,
+-                                borderRadius: 5,
++                                borderRadius: 0,
+                               );
+                             },
+                           ),
+diff --git a/app/lib/widget/big_button.dart b/app/lib/widget/big_button.dart
+index 6391658..da16bf6 100644
+--- a/app/lib/widget/big_button.dart
++++ b/app/lib/widget/big_button.dart
+@@ -33,7 +33,7 @@ class BigButton extends StatelessWidget {
+           backgroundColor: filled ? colorScheme.primary : colorScheme.secondaryContainerIfDark,
+           foregroundColor: filled ? colorScheme.onPrimary : colorScheme.onSecondaryContainerIfDark,
+           shape: RoundedRectangleBorder(
+-            borderRadius: BorderRadius.circular(10),
++            borderRadius: BorderRadius.zero,
+           ),
+           padding: const EdgeInsets.only(left: 2, right: 2, top: 10, bottom: 8),
+         ),
+diff --git a/app/lib/widget/custom_progress_bar.dart b/app/lib/widget/custom_progress_bar.dart
+index 4dbfd7e..5917155 100644
+--- a/app/lib/widget/custom_progress_bar.dart
++++ b/app/lib/widget/custom_progress_bar.dart
+@@ -5,7 +5,7 @@ class CustomProgressBar extends StatelessWidget {
+   final double borderRadius;
+   final Color? color;
+ 
+-  const CustomProgressBar({required this.progress, this.borderRadius = 10, this.color});
++  const CustomProgressBar({required this.progress, this.borderRadius = 0, this.color});
+ 
+   @override
+   Widget build(BuildContext context) {
+diff --git a/app/lib/widget/device_bage.dart b/app/lib/widget/device_bage.dart
+index a3ee94e..b7786e9 100644
+--- a/app/lib/widget/device_bage.dart
++++ b/app/lib/widget/device_bage.dart
+@@ -17,7 +17,7 @@ class DeviceBadge extends StatelessWidget {
+       padding: const EdgeInsets.symmetric(horizontal: 8),
+       decoration: BoxDecoration(
+         color: backgroundColor,
+-        borderRadius: BorderRadius.circular(5),
++        borderRadius: BorderRadius.zero,
+       ),
+       child: Text(label, style: TextStyle(color: foregroundColor)),
+     );
+diff --git a/app/lib/widget/dialogs/address_input_dialog.dart b/app/lib/widget/dialogs/address_input_dialog.dart
+index 3cd370e..a96766f 100644
+--- a/app/lib/widget/dialogs/address_input_dialog.dart
++++ b/app/lib/widget/dialogs/address_input_dialog.dart
+@@ -138,7 +138,7 @@ class _AddressInputDialogState extends State<AddressInputDialog> with Refena {
+                 _mode = _InputMode.values[index];
+               });
+             },
+-            borderRadius: BorderRadius.circular(10),
++            borderRadius: BorderRadius.zero,
+             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+             children: _InputMode.values.map((mode) {
+diff --git a/app/lib/widget/dialogs/custom_bottom_sheet.dart b/app/lib/widget/dialogs/custom_bottom_sheet.dart
+index 70083da..58f79c5 100644
+--- a/app/lib/widget/dialogs/custom_bottom_sheet.dart
++++ b/app/lib/widget/dialogs/custom_bottom_sheet.dart
+@@ -17,7 +17,7 @@ class CustomBottomSheet extends StatelessWidget {
+       title: title,
+       description: description,
+       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+-      borderRadius: 20,
++      borderRadius: 0,
+       child: child,
+     );
+   }
+diff --git a/app/lib/widget/dialogs/quick_actions_dialog.dart b/app/lib/widget/dialogs/quick_actions_dialog.dart
+index 69aea41..a0469e2 100644
+--- a/app/lib/widget/dialogs/quick_actions_dialog.dart
++++ b/app/lib/widget/dialogs/quick_actions_dialog.dart
+@@ -79,7 +79,7 @@ class _QuickActionsDialogState extends State<QuickActionsDialog> with Refena {
+                 }
+               });
+             },
+-            borderRadius: BorderRadius.circular(10),
++            borderRadius: BorderRadius.zero,
+             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+             children: _QuickAction.values.map((mode) {
+diff --git a/app/lib/widget/file_thumbnail.dart b/app/lib/widget/file_thumbnail.dart
+index ad7e007..9e78c24 100644
+--- a/app/lib/widget/file_thumbnail.dart
++++ b/app/lib/widget/file_thumbnail.dart
+@@ -177,7 +177,7 @@ class _Thumbnail extends StatelessWidget {
+       width: size,
+       height: size,
+       child: ClipRRect(
+-        borderRadius: BorderRadius.circular(10),
++        borderRadius: BorderRadius.zero,
+         child: ColoredBox(
+           color: Theme.of(context).inputDecorationTheme.fillColor!,
+           child: thumbnail == null
+diff --git a/app/lib/widget/list_tile/custom_list_tile.dart b/app/lib/widget/list_tile/custom_list_tile.dart
+index bc30380..e9e0a8c 100644
+--- a/app/lib/widget/list_tile/custom_list_tile.dart
++++ b/app/lib/widget/list_tile/custom_list_tile.dart
+@@ -23,12 +23,12 @@ class CustomListTile extends StatelessWidget {
+     return Card(
+       margin: EdgeInsets.zero,
+       shape: RoundedRectangleBorder(
+-        borderRadius: BorderRadius.circular(10),
++        borderRadius: BorderRadius.zero,
+       ),
+       color: Theme.of(context).colorScheme.secondaryContainerIfDark,
+       child: InkWell(
+         onTap: onTap,
+-        borderRadius: BorderRadius.circular(10),
++        borderRadius: BorderRadius.zero,
+         child: Padding(
+           padding: padding,
+           child: Row(
+-- 
+2.43.0
+
