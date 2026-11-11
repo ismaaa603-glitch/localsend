@@ -211,7 +211,7 @@ class _InfoBox extends StatelessWidget {
                 children: [
                   TableRow(
                     children: [
-                      Text(t.receiveTab.infoBox.alias),
+                      Text(t.receiveTab.infoBox.alias, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const SizedBox(width: 10),
                       Padding(
                         padding: const EdgeInsets.only(right: 30),
@@ -221,7 +221,7 @@ class _InfoBox extends StatelessWidget {
                   ),
                   TableRow(
                     children: [
-                      Text(t.receiveTab.infoBox.ip),
+                      Text(t.receiveTab.infoBox.ip, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +234,7 @@ class _InfoBox extends StatelessWidget {
                   ),
                   TableRow(
                     children: [
-                      Text(t.receiveTab.infoBox.port),
+                      Text(t.receiveTab.infoBox.port, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const SizedBox(width: 10),
                       SelectableText(serverState?.port.toString() ?? '-'),
                     ],

@@ -14,12 +14,13 @@ class DeviceBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
       decoration: BoxDecoration(
         color: backgroundColor,
+        border: Border.all(color: foregroundColor.withValues(alpha: 0.35)),
         borderRadius: BorderRadius.zero,
       ),
-      child: Text(label, style: TextStyle(color: foregroundColor)),
+      child: Text(label, style: TextStyle(color: foregroundColor, fontSize: 12)),
     );
   }
 }

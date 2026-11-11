@@ -42,10 +42,6 @@ class _MessageInputDialogState extends State<MessageInputDialog> {
           child: Text(t.general.cancel),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          ),
           onPressed: () => context.pop(_textController.text),
           child: Text(t.general.confirm),
         ),

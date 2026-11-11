@@ -47,10 +47,6 @@ class _CustomColorDialogState extends State<CustomColorDialog> {
           child: Text(t.general.cancel),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          ),
           onPressed: () => context.global.dispatch(NavigateAction.pop(_color)),
           child: Text(t.general.confirm),
         ),

@@ -29,6 +29,7 @@ import 'package:localsend_app/widget/responsive_builder.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
+import 'package:localsend_app/widget/section_label.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/session_status.dart';
 import 'package:localsend_isolates/util/file_size_helper.dart';
@@ -57,10 +58,7 @@ class SendTab extends StatelessWidget {
             if (vm.selectedFiles.isEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-                child: Text(
-                  t.sendTab.selection.title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                child: SectionLabel(label: t.sendTab.selection.title),
               ),
               ResponsiveWrapView(
                 outerHorizontalPadding: 15,
@@ -85,25 +83,18 @@ class SendTab extends StatelessWidget {
               Card(
                 margin: const EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 15, top: 5, bottom: 15),
+                  padding: const EdgeInsetsDirectional.only(start: 15, end: 15, top: 5, bottom: 15),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            t.sendTab.selection.title,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const Spacer(),
-                          CustomIconButton(
-                            onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
-                            child: Icon(Icons.close, color: Theme.of(context).colorScheme.secondary),
-                          ),
-                          const SizedBox(width: 5),
-                        ],
+                      SectionLabel(
+                        label: t.sendTab.selection.title,
+                        trailing: CustomIconButton(
+                          onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
+                          child: Icon(Icons.close, color: Theme.of(context).colorScheme.secondary),
+                        ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 10),
                       Text(t.sendTab.selection.files(files: vm.selectedFiles.length)),
                       Text(t.sendTab.selection.size(size: vm.selectedFiles.fold(0, (prev, curr) => prev + curr.size).asReadableFileSize)),
                       const SizedBox(height: 10),
@@ -136,10 +127,6 @@ class SendTab extends StatelessWidget {
                           ),
                           const SizedBox(width: 15),
                           ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                            ),
                             onPressed: () async {
                               if (pickerOptions.length == 1) {
                                 // open directly
@@ -159,7 +146,6 @@ class SendTab extends StatelessWidget {
                             icon: const Icon(Icons.add),
                             label: Text(t.general.add),
                           ),
-                          const SizedBox(width: 15),
                         ],
                       ),
                     ],
@@ -167,38 +153,38 @@ class SendTab extends StatelessWidget {
                 ),
               ),
             ],
-            Row(
-              children: [
-                const SizedBox(width: _horizontalPadding),
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text(t.sendTab.nearbyDevices, style: Theme.of(context).textTheme.titleMedium),
-                  ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+              child: SectionLabel(
+                label: t.sendTab.nearbyDevices,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ScanButton(
+                      ips: vm.localIps,
+                    ),
+                    Tooltip(
+                      message: t.sendTab.manualSending,
+                      child: CustomIconButton(
+                        onPressed: () async => vm.onTapAddress(context),
+                        child: const Icon(Icons.ads_click),
+                      ),
+                    ),
+                    Tooltip(
+                      message: t.dialogs.favoriteDialog.title,
+                      child: CustomIconButton(
+                        onPressed: () async => await vm.onTapFavorite(context),
+                        child: const Icon(Icons.favorite),
+                      ),
+                    ),
+                    _SendModeButton(
+                      onSelect: (mode) async => vm.onTapSendMode(context, mode),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                _ScanButton(
-                  ips: vm.localIps,
-                ),
-                Tooltip(
-                  message: t.sendTab.manualSending,
-                  child: CustomIconButton(
-                    onPressed: () async => vm.onTapAddress(context),
-                    child: const Icon(Icons.ads_click),
-                  ),
-                ),
-                Tooltip(
-                  message: t.dialogs.favoriteDialog.title,
-                  child: CustomIconButton(
-                    onPressed: () async => await vm.onTapFavorite(context),
-                    child: const Icon(Icons.favorite),
-                  ),
-                ),
-                _SendModeButton(
-                  onSelect: (mode) async => vm.onTapSendMode(context, mode),
-                ),
-              ],
+              ),
             ),
+            const SizedBox(height: 10),
             if (vm.nearbyDevices.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
@@ -291,8 +277,7 @@ class _CircularPopupButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(9999),
+    return ClipRect(
       child: Material(
         type: MaterialType.transparency,
         child: DividerTheme(

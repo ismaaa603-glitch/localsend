@@ -23,7 +23,7 @@ class CustomListTile extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
       ),
       color: Theme.of(context).colorScheme.secondaryContainerIfDark,
       child: InkWell(

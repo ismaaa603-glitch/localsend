@@ -142,10 +142,6 @@ class _QuickActionsDialogState extends State<QuickActionsDialog> with Refena {
           child: Text(t.general.cancel),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          ),
           onPressed: () {
             switch (_action) {
               case _QuickAction.counter:
