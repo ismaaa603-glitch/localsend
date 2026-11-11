@@ -81,6 +81,26 @@ jobs:
         working-directory: app
         run: flutter pub get
 
+      # The project is tied to the original author's Apple developer team, which
+      # does not exist on this runner. Switch to ad-hoc signing and drop the
+      # restricted app-group entitlement (it needs a provisioning profile).
+      - name: Disable code signing
+        working-directory: app/macos
+        run: |
+          sed -i '' \
+            -e 's/CODE_SIGN_IDENTITY = "Apple Development";/CODE_SIGN_IDENTITY = "-";/' \
+            -e 's/"CODE_SIGN_IDENTITY\[sdk=macosx\*\]" = "Apple Development";/"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";/' \
+            -e 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/' \
+            -e 's/DEVELOPMENT_TEAM = [A-Z0-9]*;/DEVELOPMENT_TEAM = "";/' \
+            Runner.xcodeproj/project.pbxproj
+          python3 - <<'PY'
+          import re
+          for f in ["Runner/Release.entitlements", "Runner/DebugProfile.entitlements", "ShareExtension/ShareExtension.entitlements"]:
+              s = open(f).read()
+              s = re.sub(r"\s*<key>com\.apple\.security\.application-groups</key>\s*<array>.*?</array>", "", s, flags=re.S)
+              open(f, "w").write(s)
+          PY
+
       - name: Compile for macOS
         working-directory: app
         run: flutter build macos --release
@@ -88,8 +108,11 @@ jobs:
       - name: Create dmg (unsigned)
         working-directory: app
         run: |
+          mkdir dmg-root
+          cp -R build/macos/Build/Products/Release/LocalSend.app dmg-root/
+          ln -s /Applications dmg-root/Applications
           hdiutil create -volname "LocalSend" \
-            -srcfolder build/macos/Build/Products/Release/LocalSend.app \
+            -srcfolder dmg-root \
             -ov -format UDZO LocalSend-custom-macos.dmg
 
       - uses: actions/upload-artifact@v6
