@@ -17,7 +17,7 @@ class CustomBottomSheet extends StatelessWidget {
       title: title,
       description: description,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      borderRadius: 20,
+      borderRadius: 0,
       child: child,
     );
   }

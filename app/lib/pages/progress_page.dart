@@ -485,7 +485,7 @@ class _ProgressPageState extends State<ProgressPage> with Refena {
                             builder: (context, value, child) {
                               return CustomProgressBar(
                                 progress: value,
-                                borderRadius: 5,
+                                borderRadius: 0,
                               );
                             },
                           ),

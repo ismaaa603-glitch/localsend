@@ -79,7 +79,7 @@ class _QuickActionsDialogState extends State<QuickActionsDialog> with Refena {
                 }
               });
             },
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             children: _QuickAction.values.map((mode) {

@@ -206,7 +206,7 @@ class _ApkPickerPageState extends State<ApkPickerPage> with Refena {
                         child: InkWell(
                           onTap: () async => (apkParams.selectMultipleApps) ? _appSelection(app) : _pickApp(app),
                           customBorder: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.zero,
                           ),
                           child: Row(
                             children: [

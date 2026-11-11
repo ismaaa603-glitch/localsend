@@ -138,7 +138,7 @@ class _AddressInputDialogState extends State<AddressInputDialog> with Refena {
                 _mode = _InputMode.values[index];
               });
             },
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             constraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             children: _InputMode.values.map((mode) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:localsend_app/config/avoid_style.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
@@ -8,11 +9,19 @@ import 'package:localsend_app/util/ui/dynamic_colors.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:yaru/yaru.dart' as yaru;
 
-final _borderRadius = BorderRadius.circular(5);
+final _borderRadius = BorderRadius.zero;
 
 ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness, DynamicColors? dynamicColors) {
   if (colorMode == ColorMode.yaru) {
     return _getYaruTheme(brightness);
+  }
+
+  // Flat near-black style. The accent is the user's custom color when set, otherwise the default pink.
+  if (colorMode == ColorMode.localsend || colorMode == ColorMode.custom) {
+    return buildAvoidTheme(
+      accent: colorMode == ColorMode.custom ? customColor : AvoidPalette.defaultAccent,
+      fontFamily: _platformFontFamily(),
+    );
   }
 
   final colorScheme = _determineColorScheme(colorMode, customColor, brightness, dynamicColors);
@@ -27,27 +36,7 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
     borderRadius: _borderRadius,
   );
 
-  // https://github.com/localsend/localsend/issues/52
-  final String? fontFamily;
-  if (checkPlatform([TargetPlatform.windows])) {
-    fontFamily = switch (LocaleSettings.currentLocale) {
-      AppLocale.ja => 'Yu Gothic UI',
-      AppLocale.ko => 'Malgun Gothic',
-      AppLocale.zhCn => 'Microsoft YaHei UI',
-      AppLocale.zhHk || AppLocale.zhTw => 'Microsoft JhengHei UI',
-      _ => 'Segoe UI Variable Display',
-    };
-  } else if (checkPlatform([TargetPlatform.linux])) {
-    fontFamily = switch (LocaleSettings.currentLocale) {
-      AppLocale.ja => 'Noto Sans CJK JP',
-      AppLocale.ko => 'Noto Sans CJK KR',
-      AppLocale.zhCn => 'Noto Sans CJK SC',
-      AppLocale.zhHk || AppLocale.zhTw => 'Noto Sans CJK TC',
-      _ => 'Noto Sans',
-    };
-  } else {
-    fontFamily = null;
-  }
+  final fontFamily = _platformFontFamily();
 
   return ThemeData(
     colorScheme: colorScheme,
@@ -80,6 +69,28 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
     ),
     fontFamily: fontFamily,
   );
+}
+
+// https://github.com/localsend/localsend/issues/52
+String? _platformFontFamily() {
+  if (checkPlatform([TargetPlatform.windows])) {
+    return switch (LocaleSettings.currentLocale) {
+      AppLocale.ja => 'Yu Gothic UI',
+      AppLocale.ko => 'Malgun Gothic',
+      AppLocale.zhCn => 'Microsoft YaHei UI',
+      AppLocale.zhHk || AppLocale.zhTw => 'Microsoft JhengHei UI',
+      _ => 'Segoe UI Variable Display',
+    };
+  } else if (checkPlatform([TargetPlatform.linux])) {
+    return switch (LocaleSettings.currentLocale) {
+      AppLocale.ja => 'Noto Sans CJK JP',
+      AppLocale.ko => 'Noto Sans CJK KR',
+      AppLocale.zhCn => 'Noto Sans CJK SC',
+      AppLocale.zhHk || AppLocale.zhTw => 'Noto Sans CJK TC',
+      _ => 'Noto Sans',
+    };
+  }
+  return null;
 }
 
 Future<void> updateSystemOverlayStyle(BuildContext context) async {

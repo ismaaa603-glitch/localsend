@@ -17,7 +17,7 @@ class DeviceBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.zero,
       ),
       child: Text(label, style: TextStyle(color: foregroundColor)),
     );

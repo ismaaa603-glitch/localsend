@@ -177,7 +177,7 @@ class _Thumbnail extends StatelessWidget {
       width: size,
       height: size,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.zero,
         child: ColoredBox(
           color: Theme.of(context).inputDecorationTheme.fillColor!,
           child: thumbnail == null
