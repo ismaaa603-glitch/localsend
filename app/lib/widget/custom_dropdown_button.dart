@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/avoid_style.dart';
 import 'package:localsend_app/config/theme.dart';
 
 /// A [DropdownButton] with a custom theme.
@@ -18,15 +19,22 @@ class CustomDropdownButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final avoid = isAvoidStyle(context);
     return Material(
-      color: Theme.of(context).inputDecorationTheme.fillColor,
-      shape: RoundedRectangleBorder(borderRadius: Theme.of(context).inputDecorationTheme.borderRadius),
+      color: theme.inputDecorationTheme.fillColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: theme.inputDecorationTheme.borderRadius,
+        side: avoid ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
+      ),
       child: DropdownButton<T>(
         value: value,
         isExpanded: expanded,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        isDense: avoid,
+        itemHeight: avoid ? null : kMinInteractiveDimension,
+        padding: EdgeInsets.symmetric(horizontal: avoid ? 10 : 12, vertical: avoid ? 8 : 0),
         underline: Container(),
-        borderRadius: Theme.of(context).inputDecorationTheme.borderRadius,
+        borderRadius: theme.inputDecorationTheme.borderRadius,
         items: items,
         onChanged: onChanged == null
             ? null

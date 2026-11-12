@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/avoid_style.dart';
 import 'package:localsend_app/config/init.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -32,6 +33,75 @@ enum HomeTab {
       case HomeTab.settings:
         return t.settingsTab.title;
     }
+  }
+}
+
+/// Flat side menu used with the near-black style: the selected entry is a full-width tinted block.
+class _AvoidRail extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final bool extended;
+
+  const _AvoidRail({
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.extended,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+    return Container(
+      width: extended ? 180 : 64,
+      decoration: const BoxDecoration(
+        color: AvoidPalette.header,
+        border: Border(right: BorderSide(color: AvoidPalette.divider)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (extended)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8, 20, 8, 20),
+              child: Text(
+                'LocalSend',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            )
+          else
+            const SizedBox(height: 20),
+          for (final tab in HomeTab.values)
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSelected(tab.index),
+                child: Container(
+                  height: 40,
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: EdgeInsets.symmetric(horizontal: extended ? 14 : 0),
+                  color: tab.index == selectedIndex ? theme.colorScheme.primaryContainer : Colors.transparent,
+                  child: Row(
+                    mainAxisAlignment: extended ? MainAxisAlignment.start : MainAxisAlignment.center,
+                    children: [
+                      Icon(tab.icon, size: 20, color: tab.index == selectedIndex ? accent : AvoidPalette.textMuted),
+                      if (extended) ...[
+                        const SizedBox(width: 12),
+                        Text(
+                          tab.label,
+                          style: TextStyle(color: tab.index == selectedIndex ? accent : AvoidPalette.textMuted),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -107,7 +177,13 @@ class _HomePageState extends State<HomePage> with Refena {
           return Scaffold(
             body: Row(
               children: [
-                if (!sizingInformation.isMobile)
+                if (!sizingInformation.isMobile && isAvoidStyle(context))
+                  _AvoidRail(
+                    selectedIndex: vm.currentTab.index,
+                    onSelected: (index) => vm.changeTab(HomeTab.values[index]),
+                    extended: sizingInformation.isDesktop,
+                  ),
+                if (!sizingInformation.isMobile && !isAvoidStyle(context))
                   NavigationRail(
                     selectedIndex: vm.currentTab.index,
                     onDestinationSelected: (index) => vm.changeTab(HomeTab.values[index]),

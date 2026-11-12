@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/config/avoid_style.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
@@ -629,8 +630,9 @@ class _SettingsEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avoid = isAvoidStyle(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: EdgeInsets.only(bottom: avoid ? 8 : 15),
       child: Row(
         children: [
           Expanded(
@@ -674,6 +676,26 @@ class _BooleanEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    if (isAvoidStyle(context)) {
+      return _SettingsEntry(
+        label: label,
+        description: description,
+        child: SizedBox(
+          height: avoidControlHeight,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Transform.scale(
+              scale: 0.8,
+              alignment: Alignment.centerRight,
+              child: Switch(
+                value: value,
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return _SettingsEntry(
       label: label,
       description: description,
@@ -719,6 +741,15 @@ class _ButtonEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isAvoidStyle(context)) {
+      return _SettingsEntry(
+        label: label,
+        child: OutlinedButton(
+          onPressed: onTap,
+          child: Text(buttonLabel, textAlign: TextAlign.center),
+        ),
+      );
+    }
     return _SettingsEntry(
       label: label,
       child: TextButton(

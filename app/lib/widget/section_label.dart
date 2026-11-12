@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A section header: a small uppercase label in the accent color
+/// A section header: a small label in the accent color
 /// with a 1px divider underneath. [trailing] is shown at the end of the label row (e.g. action buttons).
 class SectionLabel extends StatelessWidget {
   final String label;
@@ -28,13 +28,11 @@ class SectionLabel extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    label.toUpperCase(),
+                    label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
                     ),
                   ),
                 ),

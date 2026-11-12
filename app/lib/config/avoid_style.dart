@@ -20,6 +20,23 @@ class AvoidPalette {
   static const Color error = Color.fromARGB(255, 229, 72, 77);
 }
 
+/// Marker added to [ThemeData.extensions] by [buildAvoidTheme], so widgets can tell
+/// whether the flat style is active (see [isAvoidStyle]).
+class AvoidStyleMarker extends ThemeExtension<AvoidStyleMarker> {
+  const AvoidStyleMarker();
+
+  @override
+  AvoidStyleMarker copyWith() => this;
+
+  @override
+  AvoidStyleMarker lerp(ThemeExtension<AvoidStyleMarker>? other, double t) => this;
+}
+
+bool isAvoidStyle(BuildContext context) => Theme.of(context).extension<AvoidStyleMarker>() != null;
+
+/// Control height used for buttons and fields.
+const double avoidControlHeight = 35;
+
 /// Colors derived from the accent color.
 class AvoidAccent {
   final Color accent;
@@ -98,7 +115,8 @@ ThemeData buildAvoidTheme({
     surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
     overlayColor: const WidgetStatePropertyAll(Colors.transparent),
     shape: const WidgetStatePropertyAll(_square),
-    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 0)),
+    minimumSize: const WidgetStatePropertyAll(Size(0, avoidControlHeight)),
     textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.4)),
     foregroundColor: WidgetStateProperty.resolveWith((s) => isDisabled(s) ? AvoidPalette.textDim : accent),
     backgroundColor: WidgetStateProperty.resolveWith((s) {
@@ -119,7 +137,8 @@ ThemeData buildAvoidTheme({
     surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
     overlayColor: const WidgetStatePropertyAll(Colors.transparent),
     shape: const WidgetStatePropertyAll(_square),
-    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 10)),
+    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 0)),
+    minimumSize: const WidgetStatePropertyAll(Size(0, avoidControlHeight)),
     foregroundColor: WidgetStateProperty.resolveWith((s) {
       if (isDisabled(s)) return AvoidPalette.textDim;
       return isHot(s) ? AvoidPalette.textPrimary : AvoidPalette.textMuted;
@@ -215,7 +234,8 @@ ThemeData buildAvoidTheme({
       errorBorder: inputBorder(AvoidPalette.error),
       focusedErrorBorder: inputBorder(AvoidPalette.error),
       hintStyle: const TextStyle(color: AvoidPalette.textDim),
-      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(style: primaryButton),
     filledButtonTheme: FilledButtonThemeData(style: primaryButton),
@@ -311,10 +331,13 @@ ThemeData buildAvoidTheme({
     ),
   );
 
+  // Smaller text (the reference style uses Segoe UI 9pt, about 12px)
   return base.copyWith(
+    extensions: const [AvoidStyleMarker()],
     textTheme: base.textTheme.apply(
       bodyColor: AvoidPalette.textPrimary,
       displayColor: AvoidPalette.textPrimary,
+      fontSizeFactor: 0.88,
     ),
   );
 }
